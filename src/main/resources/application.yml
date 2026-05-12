@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: franchise-management-api
+  profiles:
+    default: phase1
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/franchise_db?sslMode=DISABLED&tcpKeepAlive=true
+    username: franchise
+    password: franchise_secret
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-acquire-time: 30s
+      max-idle-time: 30m
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  api-docs:
+    path: /api/v1/docs/openapi
+  swagger-ui:
+    path: /api/v1/docs/swagger-ui.html
+
+app:
+  cache:
+    max-stock-ttl: 60s
+
+---
+spring:
+  config:
+    activate:
+      on-profile: phase1
+  sql:
+    init:
+      mode: never
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.r2dbc.R2dbcRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  r2dbc:
+    url: r2dbc:mysql://mysql:3306/franchise_db?sslMode=DISABLED&tcpKeepAlive=true
+    username: franchise
+    password: franchise_secret
+  data:
+    redis:
+      host: redis
+      port: 6379
