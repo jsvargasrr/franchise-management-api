@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: franchise_db
+      MYSQL_USER: franchise
+      MYSQL_PASSWORD: franchise_secret
+      MYSQL_ROOT_PASSWORD: root_change_me
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_change_me"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # seguridad opcional por API key (descomenta y define un valor fuerte):
+      # APP_SECURITY_ENABLED: "true"
+      # APP_SECURITY_API_KEY: "cambia-esto-en-produccion"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started

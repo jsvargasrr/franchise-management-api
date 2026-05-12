@@ -29,10 +29,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when_authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 springdoc:
   api-docs:
@@ -41,8 +46,19 @@ springdoc:
     path: /api/v1/docs/swagger-ui.html
 
 app:
+  api:
+    title: Franchise Management API
+    version: 1.0.0
+    description: API reactiva para franquicias, sucursales y stock.
   cache:
     max-stock-ttl: 60s
+  cors:
+    allowed-origin-patterns:
+      - "*"
+    allow-credentials: false
+  security:
+    enabled: false
+    api-key: ""
 
 ---
 spring:
@@ -73,3 +89,23 @@ spring:
     redis:
       host: redis
       port: 6379
+
+---
+spring:
+  config:
+    activate:
+      on-profile: api
+
+---
+spring:
+  config:
+    activate:
+      on-profile: testcontainers
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
